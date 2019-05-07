@@ -17,17 +17,18 @@ import argparse
 
 from pointnet2.models import Pointnet2SemMSG as Pointnet
 from pointnet2.models.pointnet2_msg_sem import model_fn_decorator
-from pointnet2.data import Indoor3DSemSeg
+from pointnet2.data import RadarLowLvlSemSeg
 
 parser = argparse.ArgumentParser(description="Arg parser")
 parser.add_argument(
     "-batch_size", type=int, default=32, help="Batch size [default: 32]"
 )
 parser.add_argument(
+    # The number of points per frame
     "-num_points",
     type=int,
-    default=4096,
-    help="Number of points to train with [default: 2048]",
+    default=100,
+    help="Number of points to train with [default: 100]",
 )
 parser.add_argument(
     "-weight_decay",
@@ -66,12 +67,12 @@ parser.add_argument(
     "-checkpoint", type=str, default=None, help="Checkpoint to start from"
 )
 parser.add_argument(
-    "-epochs", type=int, default=200, help="Number of epochs to train for"
+    "-epochs", type=int, default=5, help="Number of epochs to train for [default: 5]"
 )
 parser.add_argument(
     "-run_name",
     type=str,
-    default="sem_seg_run_1",
+    default="sem_seg_run_radar_1",
     help="Name for run in tensorboard_logger",
 )
 parser.add_argument("--visdom-port", type=int, default=8097)
@@ -83,7 +84,7 @@ bnm_clip = 1e-2
 if __name__ == "__main__":
     args = parser.parse_args()
 
-    test_set = Indoor3DSemSeg(args.num_points, train=False)
+    test_set = RadarLowLvlSemSeg(args.num_points, train=False)
     test_loader = DataLoader(
         test_set,
         batch_size=args.batch_size,
@@ -92,7 +93,7 @@ if __name__ == "__main__":
         num_workers=2,
     )
 
-    train_set = Indoor3DSemSeg(args.num_points)
+    train_set = RadarLowLvlSemSeg(args.num_points)
     train_loader = DataLoader(
         train_set,
         batch_size=args.batch_size,
@@ -101,7 +102,7 @@ if __name__ == "__main__":
         shuffle=True,
     )
 
-    model = Pointnet(num_classes=13, input_channels=6, use_xyz=True)
+    model = Pointnet(num_classes=4, input_channels=32, use_xyz=True)
     model.cuda()
     optimizer = optim.Adam(
         model.parameters(), lr=args.lr, weight_decay=args.weight_decay
