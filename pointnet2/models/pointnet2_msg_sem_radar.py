@@ -10,7 +10,7 @@ import torch.nn as nn
 import etw_pytorch_utils as pt_utils
 from collections import namedtuple
 
-from pointnet2.utils.pointnet2_modules import PointnetFPModule, PointnetSAModuleMSG
+from pointnet2.utils.pointnet2_modules_radar import PointnetFPModule, PointnetSAModuleMSG
 
 
 def model_fn_decorator(criterion):
@@ -34,6 +34,7 @@ def model_fn_decorator(criterion):
 
 
 class Pointnet2MSG(nn.Module):
+    ########## This is what we need to use ######################################################
     r"""
         PointNet2 with multi-scale grouping
         Semantic segmentation network that uses feature propogation layers
@@ -49,16 +50,16 @@ class Pointnet2MSG(nn.Module):
             Whether or not to use the xyz position of a point as a feature
     """
 
-    def __init__(self, num_classes, input_channels=6, use_xyz=True):
+    def __init__(self, num_classes, input_channels=32, use_xyz=True):
         super(Pointnet2MSG, self).__init__()
 
         self.SA_modules = nn.ModuleList()
         c_in = input_channels
         self.SA_modules.append(
             PointnetSAModuleMSG(
-                npoint=1024,
-                radii=[0.05, 0.1],
-                nsamples=[16, 32],
+                npoint=64, # The number of groups
+                radii=[1, 3],
+                nsamples=[8, 32], # The number of samples in each group 
                 mlps=[[c_in, 16, 16, 32], [c_in, 32, 32, 64]],
                 use_xyz=use_xyz,
             )
