@@ -105,7 +105,7 @@ class Indoor3DSemSeg(data.Dataset):
 
 
 if __name__ == "__main__":
-    dset = Indoor3DSemSeg(16, "./", train=True)
+    dset = Indoor3DSemSeg(16, train=True)
     print(dset[0])
     print(len(dset))
     dloader = torch.utils.data.DataLoader(dset, batch_size=32, shuffle=True)
