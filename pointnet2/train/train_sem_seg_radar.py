@@ -27,7 +27,7 @@ parser.add_argument(
     # The number of points per frame
     "-num_points",
     type=int,
-    default=100,
+    default=512,
     help="Number of points to train with [default: 100]",
 )
 parser.add_argument(
@@ -102,7 +102,7 @@ if __name__ == "__main__":
         shuffle=True,
     )
 
-    model = Pointnet(num_classes=4, input_channels=32, use_xyz=True)
+    model = Pointnet(num_classes=4, input_channels=37, use_xyz=True)
     model.cuda()
     optimizer = optim.Adam(
         model.parameters(), lr=args.lr, weight_decay=args.weight_decay

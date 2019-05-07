@@ -50,14 +50,14 @@ class Pointnet2MSG(nn.Module):
             Whether or not to use the xyz position of a point as a feature
     """
 
-    def __init__(self, num_classes, input_channels=32, use_xyz=True):
+    def __init__(self, num_classes, input_channels=37, use_xyz=True):
         super(Pointnet2MSG, self).__init__()
 
         self.SA_modules = nn.ModuleList()
         c_in = input_channels
         self.SA_modules.append(
             PointnetSAModuleMSG(
-                npoint=64, # The number of groups
+                npoint=512, # The number of groups
                 radii=[1, 3],
                 nsamples=[8, 32], # The number of samples in each group 
                 mlps=[[c_in, 16, 16, 32], [c_in, 32, 32, 64]],
@@ -69,9 +69,9 @@ class Pointnet2MSG(nn.Module):
         c_in = c_out_0
         self.SA_modules.append(
             PointnetSAModuleMSG(
-                npoint=256,
-                radii=[0.1, 0.2],
-                nsamples=[16, 32],
+                npoint=512,
+                radii=[2, 4],
+                nsamples=[8, 32],
                 mlps=[[c_in, 64, 64, 128], [c_in, 64, 96, 128]],
                 use_xyz=use_xyz,
             )
@@ -81,8 +81,8 @@ class Pointnet2MSG(nn.Module):
         c_in = c_out_1
         self.SA_modules.append(
             PointnetSAModuleMSG(
-                npoint=64,
-                radii=[0.2, 0.4],
+                npoint=256,
+                radii=[3, 6],
                 nsamples=[16, 32],
                 mlps=[[c_in, 128, 196, 256], [c_in, 128, 196, 256]],
                 use_xyz=use_xyz,
