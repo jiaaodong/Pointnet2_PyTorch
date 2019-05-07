@@ -16,7 +16,7 @@ import os
 import argparse
 
 from pointnet2.models import Pointnet2SemMSG as Pointnet
-from pointnet2.models.pointnet2_msg_sem import model_fn_decorator
+from pointnet2.models.pointnet2_msg_sem_radar import model_fn_decorator
 from pointnet2.data import RadarLowLvlSemSeg
 
 parser = argparse.ArgumentParser(description="Arg parser")
