@@ -60,57 +60,58 @@ class Pointnet2MSG(nn.Module):
                 npoint=512, # The number of groups
                 radii=[1, 3],
                 nsamples=[8, 32], # The number of samples in each group 
-                mlps=[[c_in, 16, 16, 32], [c_in, 32, 32, 64]],
+                mlps=[[c_in, 32, 32, 64], [c_in, 64, 64, 128]],
                 use_xyz=use_xyz,
             )
         )
-        c_out_0 = 32 + 64
+        c_out_1 = 64 + 128   # 512 x c_out_1
 
-        c_in = c_out_0
+        c_in = c_out_1
         self.SA_modules.append(
             PointnetSAModuleMSG(
                 npoint=512,
                 radii=[2, 4],
                 nsamples=[8, 32],
-                mlps=[[c_in, 64, 64, 128], [c_in, 64, 96, 128]],
+                mlps=[[c_in, 32, 32, 64], [c_in, 64, 64, 128]],
                 use_xyz=use_xyz,
             )
         )
-        c_out_1 = 128 + 128
+        c_out_2 = 64 + 128   # 512 x c_out_
 
-        c_in = c_out_1
+        c_in = c_out_2
         self.SA_modules.append(
             PointnetSAModuleMSG(
                 npoint=256,
                 radii=[3, 6],
                 nsamples=[16, 32],
-                mlps=[[c_in, 128, 196, 256], [c_in, 128, 196, 256]],
+                mlps=[[c_in, 64, 64, 128], [c_in, 64, 64, 128]],
                 use_xyz=use_xyz,
             )
         )
-        c_out_2 = 256 + 256
+        c_out_3 = 128 + 128 # 256 x c_out_2
 
-        c_in = c_out_2
-        self.SA_modules.append(
-            PointnetSAModuleMSG(
-                npoint=16,
-                radii=[0.4, 0.8],
-                nsamples=[16, 32],
-                mlps=[[c_in, 256, 256, 512], [c_in, 256, 384, 512]],
-                use_xyz=use_xyz,
-            )
-        )
-        c_out_3 = 512 + 512
+        # c_in = c_out_2
+        # self.SA_modules.append(
+        #     PointnetSAModuleMSG(
+        #         npoint=16,
+        #         radii=[0.4, 0.8],
+        #         nsamples=[16, 32],
+        #         mlps=[[c_in, 256, 256, 512], [c_in, 256, 384, 512]],
+        #         use_xyz=use_xyz,
+        #     )
+        # )
+        # c_out_3 = 512 + 512
 
         self.FP_modules = nn.ModuleList()
-        self.FP_modules.append(PointnetFPModule(mlp=[256 + input_channels, 128, 128]))
-        self.FP_modules.append(PointnetFPModule(mlp=[512 + c_out_0, 256, 256]))
-        self.FP_modules.append(PointnetFPModule(mlp=[512 + c_out_1, 512, 512]))
-        self.FP_modules.append(PointnetFPModule(mlp=[c_out_3 + c_out_2, 512, 512]))
+        self.FP_modules.append(PointnetFPModule(mlp=[128 + input_channels, 128, 128, 128]))
+        self.FP_modules.append(PointnetFPModule(mlp=[256 + c_out_1, 128, 128])) # FP 2 from ___ FP1: (256, 256) ___ to another two-layer MLP with kernel
+        self.FP_modules.append(PointnetFPModule(mlp=[c_out_2 + c_out_3, 256, 256]))   # FP1 from last ___MSG: (256, c_out_2)___ to a two-layer MLP with kernel (256, 256)
 
         self.FC_layer = (
-            pt_utils.Seq(128)
-            .conv1d(128, bn=True)
+            pt_utils.Seq(128)   ### Input channels 
+            .conv1d(256, bn=True)   ### 1d Conv1
+            .dropout()   ### default is 0.5
+            .conv1d(128) ### 1d Conv2
             .dropout()
             .conv1d(num_classes, activation=None)
         )
@@ -136,13 +137,14 @@ class Pointnet2MSG(nn.Module):
         """
         xyz, features = self._break_up_pc(pointcloud)
 
-        l_xyz, l_features = [xyz], [features]
+        l_xyz, l_features = [xyz], [features]  ## This is the 0th layer in the list, the input.
         for i in range(len(self.SA_modules)):
             li_xyz, li_features = self.SA_modules[i](l_xyz[i], l_features[i])
             l_xyz.append(li_xyz)
             l_features.append(li_features)
 
-        for i in range(-1, -(len(self.FP_modules) + 1), -1):
+
+        for i in range(-1, -(len(self.FP_modules) + 1), -1):        #### For the baseline pointnet, TODO: check the layer index so that remove the FP1 skip connection
             l_features[i - 1] = self.FP_modules[i](
                 l_xyz[i - 1], l_xyz[i], l_features[i - 1], l_features[i]
             )
