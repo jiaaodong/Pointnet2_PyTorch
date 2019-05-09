@@ -52,43 +52,46 @@ class Pointnet2MSG(nn.Module):
 
     def __init__(self, num_classes, input_channels=37, use_xyz=True):
         super(Pointnet2MSG, self).__init__()
-
+        self.scaling_factor = 4
         self.SA_modules = nn.ModuleList()
         c_in = input_channels
         self.SA_modules.append(
             PointnetSAModuleMSG(
-                npoint=512, # The number of groups
+                npoint=int(512/self.scaling_factor), # The number of groups
                 radii=[1, 3],
-                nsamples=[8, 32], # The number of samples in each group 
-                mlps=[[c_in, 32, 32, 64], [c_in, 64, 64, 128]],
+                nsamples=[int(8/self.scaling_factor), int(32/self.scaling_factor)], # The number of samples in each group 
+                mlps=[[c_in, int(32/self.scaling_factor), int(32/self.scaling_factor), int(64/self.scaling_factor)], [c_in, int(64/self.scaling_factor), int(64/self.scaling_factor), 
+                            int(128/self.scaling_factor)]],
                 use_xyz=use_xyz,
             )
         )
-        c_out_1 = 64 + 128   # 512 x c_out_1
+        c_out_1 = int(64/self.scaling_factor) + int(128/self.scaling_factor)   # 512 x c_out_1
 
         c_in = c_out_1
         self.SA_modules.append(
             PointnetSAModuleMSG(
-                npoint=512,
+                npoint=int(512/self.scaling_factor),
                 radii=[2, 4],
-                nsamples=[8, 32],
-                mlps=[[c_in, 32, 32, 64], [c_in, 64, 64, 128]],
+                nsamples=[int(8/self.scaling_factor), int(32/self.scaling_factor)],
+                mlps=[[c_in, int(32/self.scaling_factor), int(32/self.scaling_factor), int(64/self.scaling_factor)], [c_in, int(64/self.scaling_factor), int(64/self.scaling_factor), 
+                    int(128/self.scaling_factor)]],
                 use_xyz=use_xyz,
             )
         )
-        c_out_2 = 64 + 128   # 512 x c_out_
+        c_out_2 = int(64/self.scaling_factor) + int(128/self.scaling_factor)   # 512 x c_out_
 
         c_in = c_out_2
         self.SA_modules.append(
             PointnetSAModuleMSG(
-                npoint=256,
+                npoint=int(256/self.scaling_factor),
                 radii=[3, 6],
-                nsamples=[16, 32],
-                mlps=[[c_in, 64, 64, 128], [c_in, 64, 64, 128]],
+                nsamples=[int(16/self.scaling_factor), int(32/self.scaling_factor)],
+                mlps=[[c_in, int(64/self.scaling_factor), int(64/self.scaling_factor), int(128/self.scaling_factor)], [c_in, int(64/self.scaling_factor), int(64/self.scaling_factor),
+                 int(128/self.scaling_factor)]],
                 use_xyz=use_xyz,
             )
         )
-        c_out_3 = 128 + 128 # 256 x c_out_2
+        c_out_3 = int(128/self.scaling_factor) + int(128/self.scaling_factor) # 256 x c_out_2
 
         # c_in = c_out_2
         # self.SA_modules.append(
@@ -103,15 +106,15 @@ class Pointnet2MSG(nn.Module):
         # c_out_3 = 512 + 512
 
         self.FP_modules = nn.ModuleList()
-        self.FP_modules.append(PointnetFPModule(mlp=[128 + input_channels, 128, 128, 128]))
-        self.FP_modules.append(PointnetFPModule(mlp=[256 + c_out_1, 128, 128])) # FP 2 from ___ FP1: (256, 256) ___ to another two-layer MLP with kernel
-        self.FP_modules.append(PointnetFPModule(mlp=[c_out_2 + c_out_3, 256, 256]))   # FP1 from last ___MSG: (256, c_out_2)___ to a two-layer MLP with kernel (256, 256)
+        self.FP_modules.append(PointnetFPModule(mlp=[int(128/self.scaling_factor) + input_channels, int(128/self.scaling_factor), int(128/self.scaling_factor), int(128/self.scaling_factor)]))
+        self.FP_modules.append(PointnetFPModule(mlp=[int(256/self.scaling_factor) + c_out_1, int(128/self.scaling_factor), int(128/self.scaling_factor)])) # FP 2 from ___ FP1: (256, 256) ___ to another two-layer MLP with kernel
+        self.FP_modules.append(PointnetFPModule(mlp=[int(c_out_2 + c_out_3), int(256/self.scaling_factor), int(256/self.scaling_factor)]))   # FP1 from last ___MSG: (256, c_out_2)___ to a two-layer MLP with kernel (256, 256)
 
         self.FC_layer = (
-            pt_utils.Seq(128)   ### Input channels 
-            .conv1d(256, bn=True)   ### 1d Conv1
+            pt_utils.Seq(int(128/self.scaling_factor))   ### Input channels 
+            .conv1d(int(256/self.scaling_factor), bn=True)   ### 1d Conv1
             .dropout()   ### default is 0.5
-            .conv1d(128) ### 1d Conv2
+            .conv1d(int(128/self.scaling_factor)) ### 1d Conv2
             .dropout()
             .conv1d(num_classes, activation=None)
         )
