@@ -5,6 +5,7 @@ from __future__ import (
     print_function,
     unicode_literals,
 )
+import torch
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_sched
 import torch.nn as nn
@@ -21,7 +22,7 @@ from pointnet2.data import RadarLowLvlSemSeg
 
 parser = argparse.ArgumentParser(description="Arg parser")
 parser.add_argument(
-    "-batch_size", type=int, default=32, help="Batch size [default: 32]"
+    "-batch_size", type=int, default=8, help="Batch size [default: 32]"
 )
 parser.add_argument(
     # The number of points per frame
@@ -37,7 +38,7 @@ parser.add_argument(
     help="L2 regularization coeff [default: 0.0]",
 )
 parser.add_argument(
-    "-lr", type=float, default=1e-2, help="Initial learning rate [default: 1e-2]"
+    "-lr", type=float, default=2e-2, help="Initial learning rate [default: 1e-2]"
 )
 parser.add_argument(
     "-lr_decay",
@@ -48,7 +49,7 @@ parser.add_argument(
 parser.add_argument(
     "-decay_step",
     type=float,
-    default=2e5,
+    default=1e4,
     help="Learning rate decay step [default: 20]",
 )
 parser.add_argument(
@@ -67,7 +68,7 @@ parser.add_argument(
     "-checkpoint", type=str, default=None, help="Checkpoint to start from"
 )
 parser.add_argument(
-    "-epochs", type=int, default=5, help="Number of epochs to train for [default: 5]"
+    "-epochs", type=int, default=800, help="Number of epochs to train for [default: 5]"
 )
 parser.add_argument(
     "-run_name",
@@ -102,7 +103,7 @@ if __name__ == "__main__":
         shuffle=True,
     )
 
-    model = Pointnet(num_classes=4, input_channels=37, use_xyz=True)
+    model = Pointnet(num_classes=4, input_channels=1, use_xyz=True)
     model.cuda()
     optimizer = optim.Adam(
         model.parameters(), lr=args.lr, weight_decay=args.weight_decay
@@ -137,8 +138,10 @@ if __name__ == "__main__":
     )
 
     it = max(it, 0)  # for the initialize value of `trainer.train`
-
-    model_fn = model_fn_decorator(nn.CrossEntropyLoss())
+    weights = [1, 50, 50, 20] #[ 1 / number of instances for each class]
+    
+    cuda0 = torch.device('cuda:0')
+    model_fn = model_fn_decorator(nn.CrossEntropyLoss(torch.tensor(weights,dtype=torch.float32, device = cuda0)))
 
     if args.visdom:
         viz = pt_utils.VisdomViz(port=args.visdom_port)
