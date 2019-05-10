@@ -29,7 +29,7 @@ def _load_data_file(name):
 
 
 class RadarLowLvlSemSeg(data.Dataset):
-    def __init__(self, num_points, train=True, train_rat=0.9, data_precent=1.0):
+    def __init__(self, num_points, train=True, train_rat=0.6, data_precent=1.0):
         super().__init__()
         self.data_precent = data_precent
         self.folder = "RadarLowLevel"

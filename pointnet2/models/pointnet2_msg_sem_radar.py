@@ -27,8 +27,41 @@ def model_fn_decorator(criterion):
 
             _, classes = torch.max(preds, -1)
             acc = (classes == labels).float().sum() / labels.numel()
+            True_labels = labels[classes==labels]
+            
+            # False_labels_GT = labels[classes!=labels]        
+            # False_labels_Pred = classes[classes!=labels]
+            # num_others = labels[labels==0].size[0]
+            # num_ped = (labels[labels==1]).float().sum()
+            # num_biker = (labels[labels==2]).size[0]
+            # num_car = (labels[labels==3]).size[0]
+            # # print("num_car:{}  num_others:{}  num_bikers{}  num_ped:{}".format(num_car, num_others, num_biker, num_ped))
+            # acc_T_ped_F_others = (False_labels_Pred[False_labels_GT==1]).numel() / num_ped
+            acc_TP_pedestrian = (True_labels==1).float().sum() / (labels==1).float().sum()
+            # print(acc_TP_pedestrian)
+            # # acc_T_ped_F_biker = (False_labels_Pred[False_labels_GT==1]).numel() / num_ped
+            # # acc_T_ped_F_car = (False_labels_Pred[False_labels_GT==2]).numel() /num_ped
 
-        return ModelReturn(preds, loss, {"acc": acc.item(), "loss": loss.item()})
+
+            # acc_TP_biker = (True_labels==2).float().sum() / (labels==2).float().sum()
+            # acc_TP_car = (True_labels==3).float().sum() / (labels==3).float().sum()
+            # acc_TP_others = (True_labels==0).float().sum() / (labels==0).float().sum()
+            # print( (True_labels==0).float().sum(), num_others,acc_TP_others)
+
+        return ModelReturn(preds, loss, 
+                                {
+                                # "Number of inputs": labels.numel(),
+                                # "Number of other targets":num_others,
+                                # "Sum of labels": labels.float().sum().item(),
+                                # "True Positive of others": acc_TP_others.item(),
+                                # "Number of pedestrian targets":num_ped.item(),
+                                "True Positive of pedestrian": acc_TP_pedestrian.item(), 
+                                # "Number of biker targets": num_biker.item(),
+                                # "True Positive of biker": acc_TP_biker.item(),
+                                # "Number of car targets": num_car.item(),
+                                # "True Positive of car": acc_TP_car.item(),
+                                "loss": loss.item(),
+                                "acc": acc.item()})
 
     return model_fn
 
