@@ -54,7 +54,7 @@ def model_fn_decorator(criterion):
                                 # "Number of other targets":num_others,
                                 # "Sum of labels": labels.float().sum().item(),
                                 # "True Positive of others": acc_TP_others.item(),
-                                # "Number of pedestrian targets":num_ped.item(),
+                                "Number of pedestrian targets":(labels==1).float().sum().item(),
                                 "True Positive of pedestrian": acc_TP_pedestrian.item(), 
                                 # "Number of biker targets": num_biker.item(),
                                 # "True Positive of biker": acc_TP_biker.item(),

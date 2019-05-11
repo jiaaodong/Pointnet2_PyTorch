@@ -88,7 +88,7 @@ if __name__ == "__main__":
     test_set = RadarLowLvlSemSeg(args.num_points, train=False)
     test_loader = DataLoader(
         test_set,
-        batch_size=3000,
+        batch_size=32,
         shuffle=False,
         pin_memory=True,
         num_workers=2,
@@ -138,7 +138,7 @@ if __name__ == "__main__":
     )
 
     it = max(it, 0)  # for the initialize value of `trainer.train`
-    weights = [1/0.93 * 1.5, 1/0.012, 1/0.012, 1/0.048] #[ 1 / number of instances for each class]
+    weights = [1/0.93 * 1, 1/0.012, 1/0.012, 1/0.048] #[ 1 / number of instances for each class]
     
     cuda0 = torch.device('cuda:0')
     model_fn = model_fn_decorator(nn.CrossEntropyLoss(torch.tensor(weights,dtype=torch.float32, device = cuda0)))
@@ -161,6 +161,7 @@ if __name__ == "__main__":
         best_name="checkpoints/poitnet2_semseg_best",
         lr_scheduler=lr_scheduler,
         bnm_scheduler=bnm_scheduler,
+        # eval_frequency=1,
         viz=viz,
     )
 
