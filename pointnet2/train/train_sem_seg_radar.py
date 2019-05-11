@@ -89,7 +89,7 @@ if __name__ == "__main__":
     test_loader = DataLoader(
         test_set,
         batch_size=32,
-        shuffle=False,
+        shuffle=True,
         pin_memory=True,
         num_workers=2,
     )
@@ -100,7 +100,7 @@ if __name__ == "__main__":
         batch_size=args.batch_size,
         pin_memory=True,
         num_workers=2,
-        shuffle=False,
+        shuffle=True,
     )
 
     model = Pointnet(num_classes=4, input_channels=2, use_xyz=True)
