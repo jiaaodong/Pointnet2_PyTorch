@@ -22,7 +22,7 @@ from pointnet2.data import RadarLowLvlSemSeg
 
 parser = argparse.ArgumentParser(description="Arg parser")
 parser.add_argument(
-    "-batch_size", type=int, default=64, help="Batch size [default: 32]"
+    "-batch_size", type=int, default=16, help="Batch size [default: 32]"
 )
 parser.add_argument(
     # The number of points per frame
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     test_set = RadarLowLvlSemSeg(args.num_points, train=False)
     test_loader = DataLoader(
         test_set,
-        batch_size=32,
+        batch_size=3000,
         shuffle=True,
         pin_memory=True,
         num_workers=2,
@@ -138,7 +138,7 @@ if __name__ == "__main__":
     )
 
     it = max(it, 0)  # for the initialize value of `trainer.train`
-    weights = [1/0.93 * 1, 1/0.012, 1/0.012, 1/0.048] #[ 1 / number of instances for each class]
+    weights = [1/0.93 * 1.5, 1/0.012, 1/0.012, 1/0.048] #[ 1 / number of instances for each class]
     
     cuda0 = torch.device('cuda:0')
     model_fn = model_fn_decorator(nn.CrossEntropyLoss(torch.tensor(weights,dtype=torch.float32, device = cuda0)))
