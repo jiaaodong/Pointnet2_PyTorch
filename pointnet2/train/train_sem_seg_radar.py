@@ -68,7 +68,7 @@ parser.add_argument(
     "-checkpoint", type=str, default=None, help="Checkpoint to start from"
 )
 parser.add_argument(
-    "-epochs", type=int, default=20, help="Number of epochs to train for [default: 5]"
+    "-epochs", type=int, default=10, help="Number of epochs to train for [default: 5]"
 )
 parser.add_argument(
     "-run_name",
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         num_workers=2,
     )
 
-    train_set = RadarLowLvlSemSeg(args.num_points)
+    train_set = RadarLowLvlSemSeg(args.num_points,train_rat=1)
     train_loader = DataLoader(
         train_set,
         batch_size=args.batch_size,
