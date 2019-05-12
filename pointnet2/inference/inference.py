@@ -9,7 +9,7 @@ import torch
 import torch.nn 
 import h5py
 import matplotlib.pyplot as plt 
-
+import time
 
 model_path = "/home/jiaaodong/Pointnet2_PyTorch/pointnet2/train/checkpoints/poitnet2_semseg_best.pth.tar"
 data_path = "/home/jiaaodong/Pointnet2_PyTorch/pointnet2/data/RadarLowLevel/radar_pcd_dataset_multi_baseline.h5"
@@ -44,14 +44,16 @@ sample = torch.tensor(np.expand_dims(sample,axis=0)).type(
             torch.FloatTensor
         )
 
-
+t1 = time.time()
 pred = model(sample.to("cuda", non_blocking=True))
 _, pred = torch.max(pred, -1)
 pred = pred.cpu().detach().numpy()
-print("shape of the features:{} and labels:{} and pred:{}".format(features.shape, labels.shape, pred.shape))
-# ax1 = plt.subplot(121)
-# ax1.scatter(points[:,1], points[:,0], c=labels[:])
-# ax2 = plt.subplot(122)
-print(pred[0,:].shape)
-plt.scatter(points[:,1], points[:,0], c=pred[0,:])
+t2 = time.time()
+inference_time = t2-t1 
+print("shape of the features:{} and labels:{} and pred:{}, infer time:{}".format(features.shape, labels.shape, pred.shape,inference_time))
+ax1 = plt.subplot(121)
+
+ax1.scatter(points[:,1], points[:,0], c=labels[0,:])
+ax2 = plt.subplot(122)
+ax2.scatter(points[:,1], points[:,0], c=pred[0,:])
 plt.show()
