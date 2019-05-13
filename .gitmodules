@@ -1,4 +1,4 @@
 [submodule "etw_pytorch_utils"]
 	path = etw_pytorch_utils
-	url = git@github.com:jiaaodong/etw_pytorch_utils.git
-	branch = master
+	url = https://github.com/jiaaodong/etw_pytorch_utils.git
+	branch = today
