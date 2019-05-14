@@ -94,7 +94,7 @@ if __name__ == "__main__":
         num_workers=2,
     )
 
-    train_set = RadarLowLvlSemSeg(args.num_points,train_rat=1)
+    train_set = RadarLowLvlSemSeg(args.num_points,train_rat=0.6)
     train_loader = DataLoader(
         train_set,
         batch_size=args.batch_size,
