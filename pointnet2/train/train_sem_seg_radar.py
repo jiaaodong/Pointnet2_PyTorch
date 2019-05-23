@@ -88,7 +88,7 @@ if __name__ == "__main__":
     test_set = RadarLowLvlSemSeg(args.num_points, train=False)
     test_loader = DataLoader(
         test_set,
-        batch_size=3000,
+        batch_size=4096,
         shuffle=True,
         pin_memory=True,
         num_workers=2,
@@ -103,7 +103,7 @@ if __name__ == "__main__":
         shuffle=True,
     )
 
-    model = Pointnet(num_classes=4, input_channels=2, use_xyz=True)
+    model = Pointnet(num_classes=4, input_channels=72, use_xyz=False)
     model.cuda()
     optimizer = optim.Adam(
         model.parameters(), lr=args.lr, weight_decay=args.weight_decay
@@ -138,7 +138,7 @@ if __name__ == "__main__":
     )
 
     it = max(it, 0)  # for the initialize value of `trainer.train`
-    weights = [1/0.93 * 1.5, 1/0.012, 1/0.012, 1/0.048] #[ 1 / number of instances for each class]
+    weights = [0.00312226, 0.51293818, 0.42739984, 0.05653972] #[ 1 / number of instances for each class]
     
     cuda0 = torch.device('cuda:0')
     model_fn = model_fn_decorator(nn.CrossEntropyLoss(torch.tensor(weights,dtype=torch.float32, device = cuda0)))
