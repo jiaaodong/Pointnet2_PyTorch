@@ -53,8 +53,6 @@ class Tester(object):
                 else:
                     pred_labels_all = np.concatenate((pred_labels_all, pred_labels_np), axis=0)
                     true_labels_all = np.concatenate((true_labels_all, labels_np), axis=0)
-            pred_labels_all = pred_labels_all
-            true_labels_all = true_labels_all
             loss = total_loss/cnter
 
         return loss, pred_labels_all, true_labels_all
@@ -62,21 +60,21 @@ class Tester(object):
 
     def _test_it(self, batch):
         self.model.zero_grad()
-        classes, loss, res_dict = self._forward_pass(batch)
-        return classes, loss, res_dict 
+        classes, true_labels, res_dict = self._forward_pass(batch)
+        return classes, true_labels, res_dict 
 
     def _forward_pass(self, batch):
-        inputs, labels = batch
+        inputs, true_labels = batch
         if self.use_gpu:
             inputs = inputs.cuda()
-            labels = labels.cuda()
+            true_labels = true_labels.cuda()
         self.model.eval()
         preds = self.model(inputs)
-        loss = self.loss_func(preds.view(labels.numel(),-1), labels.view(-1))
+        loss = self.loss_func(preds.view(true_labels.numel(),-1), true_labels.view(-1))
         _, pred_labels = torch.max(preds, -1)
-        acc = (pred_labels.view(-1) == labels.view(-1)).float().sum() / labels.numel()
+        acc = (pred_labels.view(-1) == true_labels.view(-1)).float().sum() / true_labels.numel()
         res_dict = {
             "loss": loss.item(),
             "acc": acc.item()
         }
-        return pred_labels, labels, res_dict
+        return pred_labels, true_labels, res_dict
