@@ -25,6 +25,8 @@ def _load_data_file(name):
     f = h5py.File(name)
     data = f["data"][:]
     label = f["label"][:] 
+    # data = np.insert(data, 2, 0, axis=2)
+    print(data.shape)
     return data, label
 
 
@@ -63,7 +65,7 @@ class RadarLowLvlSemSeg(data.Dataset):
 
     def __getitem__(self, idx):
         pt_idxs = np.arange(0, self.num_points)
-        np.random.shuffle(pt_idxs)
+        # np.random.shuffle(pt_idxs)
 
         current_points = torch.from_numpy(self.points[idx, pt_idxs].copy()).type(
             torch.FloatTensor
